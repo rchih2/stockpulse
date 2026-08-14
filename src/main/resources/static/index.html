@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>股市即時看板</title>
+    <link rel="manifest" href="/manifest.json">
+    <style>
+        body { font-family: -apple-system, sans-serif; background: #111; color: #eee; margin: 0; padding: 16px; }
+        .card { background: #1c1c1c; border-radius: 12px; padding: 16px; margin-bottom: 12px; }
+        .symbol { font-size: 14px; color: #888; }
+        .price { font-size: 28px; font-weight: bold; }
+        .up { color: #ff5252; }
+        .down { color: #4caf50; }
+        #status { font-size: 12px; color: #666; margin-bottom: 12px; }
+    </style>
+</head>
+<body>
+<div id="status">連線中...</div>
+<div id="quotes"></div>
+
+<script>
+    const quotesEl = document.getElementById('quotes');
+    const statusEl = document.getElementById('status');
+    const lastPrices = {};
+    const cards = {};
+
+    function connect() {
+        // 記得改成你的 Render 部署網址，例如 wss://your-app.onrender.com/ws
+        const ws = new WebSocket(location.origin.replace('http', 'ws') + '/ws');
+
+        ws.onopen = () => {
+            statusEl.textContent = '已連線';
+            ['2330', '2317', '0050'].forEach(symbol => {
+                ws.send('SUBSCRIBE ' + symbol);
+            });
+        };
+
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            renderQuote(data);
+        };
+
+        ws.onclose = () => {
+            statusEl.textContent = '連線中斷，5 秒後重試...（Render 免費方案休眠時會發生這個狀況）';
+            setTimeout(connect, 5000);
+        };
+    }
+
+    function renderQuote(data) {
+        if (!cards[data.symbol]) {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `<div class="symbol">${data.symbol}</div><div class="price"></div>`;
+            quotesEl.appendChild(card);
+            cards[data.symbol] = card;
+        }
+
+        const priceEl = cards[data.symbol].querySelector('.price');
+        const prev = lastPrices[data.symbol];
+        priceEl.textContent = data.price;
+        priceEl.className = 'price ' + (prev && data.price > prev ? 'up' : prev && data.price < prev ? 'down' : '');
+        lastPrices[data.symbol] = data.price;
+    }
+
+    connect();
+
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js');
+    }
+</script>
+</body>
+</html>

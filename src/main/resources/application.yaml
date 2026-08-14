@@ -1,0 +1,27 @@
+spring:
+  threads:
+    virtual:
+      enabled: true
+
+  datasource:
+    # 從 Supabase 專案設定頁面複製連線字串，格式類似：
+    # jdbc:postgresql://db.xxxxxxxx.supabase.co:5432/postgres
+    url: ${DATABASE_URL}
+    username: ${DATABASE_USER}
+    password: ${DATABASE_PASSWORD}
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  data:
+    redis:
+      # 從 Upstash 主控台複製，格式類似：
+      # rediss://default:xxxxx@xxxxx.upstash.io:6379
+      url: ${REDIS_URL}
+
+server:
+  port: ${PORT:8080}   # Render 會透過環境變數指定 PORT，一定要讀這個變數

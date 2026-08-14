@@ -1,0 +1,11 @@
+{
+  "name": "股市即時看板",
+  "short_name": "股市看板",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#111111",
+  "theme_color": "#111111",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }
+  ]
+}
